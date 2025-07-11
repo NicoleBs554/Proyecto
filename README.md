@@ -1,2 +1,2 @@
-# Proyect
+# Proyecto
 binary_tree
