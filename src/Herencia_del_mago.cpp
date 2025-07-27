@@ -1,13 +1,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
-#include "src/tree.h"
+#include "tree.h"
 
 using namespace std;
-
+Tree<PersonData> arbol;
 void menu (){
     char opcion;
+    
 
     do{
         cout << "========MENU========\n\n";
@@ -23,12 +23,16 @@ void menu (){
 
         switch (opcion){
             case '1':
+                arbol.buildFromCSV();
+                cout << "Datos cargados exitosamente desde 'binary_tree.csv'.\n";
             break;
 
             case '2':
+                arbol.mostrarLineaSucesionActual();
             break;
 
             case '3':
+                arbol.actualizarOwner();
             break;
 
             case '4':
@@ -38,6 +42,11 @@ void menu (){
             break;
 
             case '6':
+                cout << "Programa finalizado\n\n";
+            break;
+
+            default:
+                cout << "Opcion invalida, intente de nuevo\n\n";
             break;
         }
 

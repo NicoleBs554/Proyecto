@@ -24,13 +24,14 @@ private:
     T data;
     Node<T>* left;
     Node<T>* right;
-    int heigth = 1; // Altura del nodo
-    int fe = 0;     // Factor de equilibrio
+    int heigth; // Altura del nodo
+    int fe;     // Factor de equilibrio
 public:
-    Node(T value, Node<T>* l = nullptr, Node<T>* r = nullptr);
+     Node(T value, Node<T>* l = nullptr, Node<T>* r = nullptr)
+        : data(value), left(l), right(r), heigth(1), fe(0) {}
     ~Node();
 
-    T getData();
+    T& getData();
     void setData(T value);
     Node<T>* getLeft();
     Node<T>* getRight();
@@ -56,17 +57,13 @@ public:
 // --- Implementación de métodos ---
 
 template <class T>
-Node<T>::Node(T value, Node<T>* l, Node<T>* r)
-    : data(value), left(l), right(r) {}
-
-template <class T>
 Node<T>::~Node() {
     this->right = nullptr;
     this->left = nullptr;
 }
 
 template <class T>
-T Node<T>::getData() {
+T& Node<T>::getData() {
     return data;
 }
 
