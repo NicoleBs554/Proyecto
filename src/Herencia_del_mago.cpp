@@ -16,7 +16,7 @@ int main() {
         cout << "4. Editar Datos de Mago\n";
         cout << "5. Mostrar Herencia Magica\n";
         cout << "6. Guardar Cambios en CSV\n";
-        cout << "7. Establecer Dueño del Hechizo\n";
+        cout << "7. Establecer Owner del Hechizo\n";
         cout << "8. Salir\n";
         cout << "Seleccione opcion: ";
         cin >> opcion;

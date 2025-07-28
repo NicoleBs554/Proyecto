@@ -13,6 +13,7 @@ private:
     Node<T>* current_owner;
     Node<T>* nodos[MAX_NODOS];
     int contadorNodos;
+    string filename;
 
     void deleteTree(Node<T>* node) {
         if(node) {
@@ -32,7 +33,6 @@ private:
     Node<T>* encontrarSucesor(Node<T>* start) {
         if (!start) return nullptr;
         
-        // Buscar en discípulos directos
         Node<T>* hijos[2] = {start->getLeft(), start->getRight()};
         
         // Prioridad 1: Magia elemental o única
@@ -70,7 +70,6 @@ private:
         while (front < rear) {
             Node<T>* current = queue[front++];
             
-            // Evitar el nodo inicial
             if (current != start && !current->getData().is_dead) {
                 string magia = current->getData().type_magic;
                 if(magia == "elemental" || magia == "unique") return current;
@@ -102,7 +101,7 @@ private:
     }
 
 public:
-    Tree() : root(nullptr), current_owner(nullptr), contadorNodos(0) {}
+    Tree(const string& file = "bin/binary_tree.csv") : root(nullptr), current_owner(nullptr), contadorNodos(0), filename(file) {}
 
     ~Tree() {
         deleteTree(root);
@@ -114,6 +113,8 @@ public:
             cerr << "Error abriendo archivo: " << filename << endl;
             return;
         }
+        
+         guardarCSV();
 
         string line;
         getline(file, line); // Ignorar cabecera
@@ -166,22 +167,23 @@ public:
             }
         }
     }
-
+    void cargarDatos() {
+        buildFromCSV(filename);
+        cout << "Datos cargados correctamente desde " << filename << endl;
+    }   
+        
     void setOwner(int id) {
         Node<T>* nodo = buscarPorId(id);
         if (nodo) {
-            // Desmarcar dueño actual si existe
             if (current_owner) {
                 current_owner->getData().is_owner = false;
             }
-            // Establecer nuevo dueño
             current_owner = nodo;
             current_owner->getData().is_owner = true;
-            cout << "El dueño del hechizo ha sido actualizado a: ";
-            current_owner->print();
-            cout << endl;
+            guardarCSV(); // Persistir cambio inmediatamente
+            cout << "Dueño actualizado y guardado en archivo\n";
         } else {
-            cout << "No se encontró un mago con ID " << id << endl;
+            cout << "Mago no encontrado" << endl;
         }
     }
 
@@ -202,47 +204,47 @@ public:
                  << (p.is_owner ? "1" : "0") << "\n";
         }
         file.close();
+        cout << "Datos guardados en " << filename << endl;
     }
 
     void mostrarLineaSucesionVivos() {
         if(!current_owner) {
-            cout << "No hay owner actual" << endl;
+            cout << "No hay dueño actual del hechizo" << endl;
             return;
         }
         
-        Node<T>* camino[MAX_NODOS];
-        int cont = 0;
+        Node<T>* linea[MAX_NODOS];
+        int contadorLinea = 0;
         Node<T>* actual = current_owner;
         
-        while(actual && cont < MAX_NODOS) {
+        while(actual && contadorLinea < MAX_NODOS) {
             if(!actual->getData().is_dead) {
-                camino[cont++] = actual;
+                linea[contadorLinea++] = actual;
             }
             actual = actual->getParent();
         }
         
-        cout << "Línea de sucesión (vivos):" << endl;
-        for(int i = cont-1; i >= 0; i--) {
-            camino[i]->print();
+        cout << "\nLínea de Sucesión:" << endl;
+        for(int i = contadorLinea-1; i >= 0; i--) {
+            linea[i]->print();
             if(i > 0) cout << " -> ";
         }
         cout << endl;
     }
 
     void actualizarOwner() {
-        if(!current_owner) return;
+        if(!current_owner) {
+            cout << "No hay dueño actual" << endl;
+            return;
+        }
         
         Wizard& datosOwner = current_owner->getData();
-        if(!datosOwner.is_dead && datosOwner.age <= 70) return;
-
-        datosOwner.is_owner = false;
         Node<T>* nuevoOwner = nullptr;
 
         // REGLA ESPECIAL: >70 años
         if(!datosOwner.is_dead && datosOwner.age > 70) {
-            // Buscar discípulo con misma magia
-            Node<T>* discipulo = nullptr;
             Node<T>* hijos[2] = {current_owner->getLeft(), current_owner->getRight()};
+            Node<T>* discipulo = nullptr;
             
             for(int i = 0; i < 2; i++) {
                 if(hijos[i] && !hijos[i]->getData().is_dead) {
@@ -253,27 +255,22 @@ public:
                 }
             }
             
-            // Si no, buscar el más viejo
             if(!discipulo) {
-                Node<T>* masViejo = nullptr;
                 for(int i = 0; i < 2; i++) {
                     if(hijos[i] && !hijos[i]->getData().is_dead) {
-                        if(!masViejo || hijos[i]->getData().age > masViejo->getData().age) {
-                            masViejo = hijos[i];
+                        if(!discipulo || hijos[i]->getData().age > discipulo->getData().age) {
+                            discipulo = hijos[i];
                         }
                     }
                 }
-                discipulo = masViejo;
             }
             nuevoOwner = discipulo;
         }
         
         // REGLAS PARA MUERTE
         if(datosOwner.is_dead || !nuevoOwner) {
-            // REGLA 1-3: Búsqueda en discípulos
             nuevoOwner = encontrarSucesor(current_owner);
             
-            // REGLA 4: Compañero discípulo
             if(!nuevoOwner && current_owner->getParent()) {
                 Node<T>* padre = current_owner->getParent();
                 Node<T>* companero = (padre->getLeft() == current_owner) 
@@ -289,7 +286,6 @@ public:
                 }
             }
             
-            // REGLA 5: Compañero del maestro
             if(!nuevoOwner && current_owner->getParent() && 
                current_owner->getParent()->getParent()) {
                 Node<T>* abuelo = current_owner->getParent()->getParent();
@@ -299,38 +295,43 @@ public:
                 if(tio && !tio->getData().is_dead) nuevoOwner = tio;
             }
             
-            // REGLA 6-7: Mujeres jóvenes
             if(!nuevoOwner) {
-                nuevoOwner = encontrarMujerJoven(true);  // Primero con discípulos y magia mixed
-                if(!nuevoOwner) nuevoOwner = encontrarMujerJoven(false);  // Cualquier mujer joven
+                nuevoOwner = encontrarMujerJoven(true);
+                if(!nuevoOwner) nuevoOwner = encontrarMujerJoven(false);
             }
         }
 
         if(nuevoOwner) {
+            datosOwner.is_owner = false;
             nuevoOwner->getData().is_owner = true;
             current_owner = nuevoOwner;
-            cout << "Nuevo ownerasignado: ";
-            nuevoOwner->print();
+            cout << "Nuevo dueño: ";
+            current_owner->print();
             cout << endl;
+            guardarCSV();
         } else {
-            cout << "No se pudo asignar nuevo owner" << endl;
+            cout << "No se pudo asignar nuevo dueño" << endl;
         }
     }
 
     void editarNodo(int id, const T& nuevosDatos) {
         Node<T>* nodo = buscarPorId(id);
         if(nodo) {
-            T& datos = nodo->getData();   // referencia no-const
+            T& datos = nodo->getData();
             datos.first_name = nuevosDatos.first_name;
             datos.last_name = nuevosDatos.last_name;
             datos.gender = nuevosDatos.gender;
             datos.age = nuevosDatos.age;
             datos.is_dead = nuevosDatos.is_dead;
             datos.type_magic = nuevosDatos.type_magic;
-         if(nodo == current_owner && !nuevosDatos.is_owner) {
-                current_owner = nullptr;
-            }   // No se cambia: id, id_father, is_owner
-            cout << "Datos actualizados correctamente" << endl;
+            
+            if(nodo == current_owner && datos.is_dead) {
+                datos.is_owner = false;
+                actualizarOwner();
+            }
+            
+            cout << "Datos actualizados" << endl;
+            guardarCSV();
         } else {
             cout << "Mago no encontrado" << endl;
         }
