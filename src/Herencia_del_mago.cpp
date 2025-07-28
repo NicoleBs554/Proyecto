@@ -9,43 +9,42 @@ int main() {
 
     char opcion;
     do {
-        cout << "========MENU========\n\n";
-        cout << "1. Cargar Datos de la Escuela (desde CSV)\n";
-        cout << "2. Mostrar Linea de Sucesion Actual\n";
-        cout << "3. Gestionar Propietario del Hechizo\n";
-        cout << "4. Editar Datos de un Mago\n";
-        cout << "5. Mostrar Hechizos de un Mago\n";
-        cout << "6. Terminar Programa\n";
-        cout << "Ingrese su opcion: ";
+        cout << "\n======== MENU PRINCIPAL ========\n";
+        cout << "1. Cargar Datos desde CSV\n";
+        cout << "2. Mostrar Linea de Sucesion\n";
+        cout << "3. Actualizar Propietario del Hechizo\n";
+        cout << "4. Editar Datos de Mago\n";
+        cout << "5. Mostrar Herencia Magica\n";
+        cout << "6. Guardar Cambios en CSV\n";
+        cout << "7. Establecer Dueño del Hechizo\n";
+        cout << "8. Salir\n";
+        cout << "Seleccione opcion: ";
         cin >> opcion;
-        cout << "\n";
+        cin.ignore(); // Limpiar buffer
 
         switch (opcion) {
             case '1': 
-                arbol.buildFromCSV("binary_tree.csv");
+                arbol.buildFromCSV();
                 cargado = true;
                 cout << "Datos cargados correctamente\n";
                 break;
                 
             case '2': 
-                if (!cargado) {
-                    cout << "Primero cargue los datos\n";
-                    break;
-                }
-                arbol.mostrarLineaSucesionVivos();
+                if (!cargado) cout << "Primero cargue los datos (opcion 1)\n";
+                else arbol.mostrarLineaSucesionVivos();
                 break;
                 
             case '3': 
-                if (!cargado) {
-                    cout << "Primero cargue los datos\n";
-                    break;
+                if (!cargado) cout << "Primero cargue los datos (opcion 1)\n";
+                else {
+                    arbol.actualizarOwner();
+                    cout << "Propietario actualizado\n";
                 }
-                arbol.actualizarOwner();
                 break;
                 
             case '4': {
                 if (!cargado) {
-                    cout << "Primero cargue los datos\n";
+                    cout << "Primero cargue los datos (opcion 1)\n";
                     break;
                 }
                 int id;
@@ -57,25 +56,22 @@ int main() {
                 cin >> nuevos.first_name;
                 cout << "Nuevo apellido: ";
                 cin >> nuevos.last_name;
-                cout << "Nuevo genero (M/F): ";
+                cout << "Genero (M/F): ";
                 cin >> nuevos.gender;
-                cout << "Nueva edad: ";
+                cout << "Edad: ";
                 cin >> nuevos.age;
-                cout << "Esta muerto? (1:Si, 0:No): ";
+                cout << "Muerto? (1=Si, 0=No): ";
                 cin >> nuevos.is_dead;
                 cout << "Tipo de magia: ";
                 cin >> nuevos.type_magic;
-                cout << "Es dueño? (1:Si, 0:No): ";
-                cin >> nuevos.is_owner;
                 
                 arbol.editarNodo(id, nuevos);
-                cout << "Datos actualizados\n";
                 break;
             }
                 
             case '5': {
                 if (!cargado) {
-                    cout << "Primero cargue los datos\n";
+                    cout << "Primero cargue los datos (opcion 1)\n";
                     break;
                 }
                 int id;
@@ -85,14 +81,34 @@ int main() {
                 break;
             }
                 
-            case '6': 
-                cout << "Saliendo...\n";
+            case '6':
+                if (!cargado) cout << "Primero cargue los datos (opcion 1)\n";
+                else {
+                    arbol.guardarCSV();
+                    cout << "Datos guardados en CSV correctamente\n";
+                }
+                break;
+                
+            case '7': {
+                if (!cargado) {
+                    cout << "Primero cargue los datos (opcion 1)\n";
+                } else {
+                    int id;
+                    cout << "ID del mago a establecer como dueño: ";
+                    cin >> id;
+                    arbol.setOwner(id);
+                }
+                break;
+            }
+        
+            case '8':
+                cout << "Saliendo del programa...\n";
                 break;
                 
             default:
-                cout << "Opcion invalida\n";
+                cout << "Opcion no valida\n";
         }
-    } while (opcion != '6');
+    } while (opcion != '8');
 
     return 0;
 }

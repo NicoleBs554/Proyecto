@@ -3,7 +3,6 @@
 #include <string>
 using namespace std;
 
-// Estructura para los datos del mago
 struct Wizard {
     int id;
     string first_name;
@@ -30,98 +29,45 @@ private:
     T data;
     Node<T>* left;
     Node<T>* right;
-    Node<T>* parent;  // Añadido para rastrear padre
-    int height;
+    Node<T>* parent;
 
 public:
     Node(T value, Node<T>* l = nullptr, Node<T>* r = nullptr, Node<T>* p = nullptr)
-        : data(value), left(l), right(r), parent(p), height(1) {}
+        : data(value), left(l), right(r), parent(p) {}
         
-    ~Node() {
-        // No liberar memoria aquí, el árbol se encargará
-    }
+    ~Node() {}
 
-    T getData() { return data; }
-    void setData(T value) { data = value; }
+    T& getData() { return data; }
+    const T& getData() const { return data; }
+    void setData(T value) { 
+        value.id = data.id;
+        value.id_father = data.id_father;
+        data = value;
+    }
     
     Node<T>* getLeft() { return left; }
     Node<T>* getRight() { return right; }
-    Node<T>* getParent() { return parent; }  // Nuevo
+    Node<T>* getParent() { return parent; }
     
     void setLeft(Node<T>* node) { 
         left = node; 
-        if (node) node->parent = this;  // Establecer padre automáticamente
+        if (node) node->parent = this;
     }
     
     void setRight(Node<T>* node) { 
         right = node; 
-        if (node) node->parent = this;  // Establecer padre automáticamente
+        if (node) node->parent = this;
     }
     
-    void setParent(Node<T>* node) { parent = node; }  // Nuevo
+    void setParent(Node<T>* node) { parent = node; }
     
     void print() {
         cout << data.first_name << " " << data.last_name;
         if (data.is_owner) cout << " (OWNER)";
         if (data.is_dead) cout << " [DEAD]";
-        cout << endl;
     }
     
     bool hoja() {
         return left == nullptr && right == nullptr;
     }
-    
-    int getHeight() { return height; }
-    void setHeight(int h) { height = h; }
-    
-    void setChildren(Node<T>* l, Node<T>* r) {
-        setLeft(l);
-        setRight(r);
-    }
-    
-    // Buscar nodo por ID (recursivo)
-    Node<T>* findNodeById(int id) {
-        if (data.id == id) return this;
-        
-        Node<T>* found = nullptr;
-        if (left) found = left->findNodeById(id);
-        if (found) return found;
-        
-        if (right) found = right->findNodeById(id);
-        return found;
-    }
 };
-
-template<class T>
-    void setData(T value) {
-        // Bloquea modificación de ID y padre
-        value.id = data.id;
-        value.id_father = data.id_father;
-        data = value;
-    }
-
-    template<class T>
-    Node<T> getData() { return data; }
-
-    template<class T>
-    Node<T>* getLeft() { return left; }
-
-    template<class T>
-    Node<T>* getRight() { return right; }
-
-    template<class T>
-    Node<T>* getParent() { return parent; }
-
-    template<class T>
-    void setLeft(Node<T>* node) { 
-        left = node;
-        if(node) node->parent = this;
-    }
-    template<class T>
-    void setRight(Node<T>* node) { 
-        right = node;
-        if(node) node->parent = this;
-    }
-
-    template<class T>
-    void setParent(Node<T>* node) { parent = node; }
