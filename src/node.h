@@ -3,8 +3,8 @@
 #include <string>
 using namespace std;
 
-// Estructura para los datos de la persona
-struct PersonData {
+// Estructura para los datos del mago
+struct Wizard {
     int id;
     string first_name;
     string last_name;
@@ -15,7 +15,13 @@ struct PersonData {
     string type_magic;
     bool is_owner;
 
-    PersonData() : id(0), gender('M'), age(0), id_father(0), is_dead(false), is_owner(false) {}
+    void mostrar() const {
+        cout << "ID: " << id << ", Nombre: " << first_name << " " << last_name
+             << ", Género: " << gender << ", Edad: " << age
+             << ", Padre ID: " << id_father << ", Muerto: " << (is_dead ? "Sí" : "No")
+             << ", Tipo de magia: " << type_magic
+             << ", Dueño: " << (is_owner ? "Sí" : "No") << endl;
+    }
 };
 
 template<class T>
@@ -24,45 +30,98 @@ private:
     T data;
     Node<T>* left;
     Node<T>* right;
-    int heigth = 1; // Altura del nodo
-    int fe = 0;     // Factor de equilibrio
+    Node<T>* parent;  // Añadido para rastrear padre
+    int height;
+
 public:
-    Node(T value, Node<T>* l = nullptr, Node<T>* r = nullptr)
-        : data(value), left(l), right(r) {}
-    ~Node() {}
+    Node(T value, Node<T>* l = nullptr, Node<T>* r = nullptr, Node<T>* p = nullptr)
+        : data(value), left(l), right(r), parent(p), height(1) {}
+        
+    ~Node() {
+        // No liberar memoria aquí, el árbol se encargará
+    }
 
     T getData() { return data; }
     void setData(T value) { data = value; }
+    
     Node<T>* getLeft() { return left; }
     Node<T>* getRight() { return right; }
-    void setLeft(Node<T>* node) { left = node; }
-    void setRight(Node<T>* node) { right = node; }
-    void print() { 
-        // Imprimir nombre y estado de dueño
+    Node<T>* getParent() { return parent; }  // Nuevo
+    
+    void setLeft(Node<T>* node) { 
+        left = node; 
+        if (node) node->parent = this;  // Establecer padre automáticamente
+    }
+    
+    void setRight(Node<T>* node) { 
+        right = node; 
+        if (node) node->parent = this;  // Establecer padre automáticamente
+    }
+    
+    void setParent(Node<T>* node) { parent = node; }  // Nuevo
+    
+    void print() {
         cout << data.first_name << " " << data.last_name;
-        if (data.is_owner) cout << " (DUEÑO)";
-        if (data.is_dead) cout << " [MUERTO]";
+        if (data.is_owner) cout << " (OWNER)";
+        if (data.is_dead) cout << " [DEAD]";
         cout << endl;
     }
-
-    bool hoja() { return left == nullptr && right == nullptr; }
-
-    int getHeigth() { return heigth; }
-    void setHeigth(int h) { heigth = h; }
-    int getFe() { return fe; }
-    void setFe(int f) { fe = f; }
-    void setFe();
-
-    Node<T>* getChildren(int child) {
-        if (child == 0) return left;
-        if (child == 1) return right;
-        return nullptr;
+    
+    bool hoja() {
+        return left == nullptr && right == nullptr;
     }
+    
+    int getHeight() { return height; }
+    void setHeight(int h) { height = h; }
+    
     void setChildren(Node<T>* l, Node<T>* r) {
-        left = l;
-        right = r;
+        setLeft(l);
+        setRight(r);
+    }
+    
+    // Buscar nodo por ID (recursivo)
+    Node<T>* findNodeById(int id) {
+        if (data.id == id) return this;
+        
+        Node<T>* found = nullptr;
+        if (left) found = left->findNodeById(id);
+        if (found) return found;
+        
+        if (right) found = right->findNodeById(id);
+        return found;
+    }
+};
+
+template<class T>
+    void setData(T value) {
+        // Bloquea modificación de ID y padre
+        value.id = data.id;
+        value.id_father = data.id_father;
+        data = value;
     }
 
-    int alturaAuto();
-    int calculate_Heigth(Node<T>* node);
-};
+    template<class T>
+    Node<T> getData() { return data; }
+
+    template<class T>
+    Node<T>* getLeft() { return left; }
+
+    template<class T>
+    Node<T>* getRight() { return right; }
+
+    template<class T>
+    Node<T>* getParent() { return parent; }
+
+    template<class T>
+    void setLeft(Node<T>* node) { 
+        left = node;
+        if(node) node->parent = this;
+    }
+    template<class T>
+    void setRight(Node<T>* node) { 
+        right = node;
+        if(node) node->parent = this;
+    }
+
+    template<class T>
+    void setParent(Node<T>* node) { parent = node; }
